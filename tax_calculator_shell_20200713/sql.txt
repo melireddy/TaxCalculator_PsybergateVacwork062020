@@ -1,0 +1,4 @@
+Sql Required to create person table:
+
+create database vacation_work;
+create table person (taxnumber varchar(10) unique not null, name varchar(50) not null, surname varchar(50) not null, date_of_birth date not null, primary key(taxnumber));

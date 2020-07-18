@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="project" basedir="." default="default">
+	<property environment="env" />
+
+	<property name="src.dir" location="src"/>
+	<property name="src.main" location="${src.dir}/main/"/>
+	<property name="src.main.resources" value="${src.main}/resources" />
+	<property name="srcdir" value="${src.main}/java" />
+	<property name="resdir" value="${src.main}/resources" />
+	<property name="libdir" value="lib" />
+	
+	<!--*** build properties ***-->
+	<property name="target" location="target"/>
+	<property name="build" location="${target}/build"/>
+	<property name="build.webapp" value="${build}/WAR" />
+	<property name="build.webinf" value="${build.webapp}/WEB-INF" />
+	<property name="build.classes" location="${build.webinf}/classes"/>
+	<property name="build.weblib" value="${build.webinf}/lib" />
+	<property name="deploy" location="${target}/deploy"/>
+	<property name="war.name" value="taxcalc" />
+	<property name="war.build.path" value="${deploy}/${war.name}.war" />
+	<property name="appserver" value="${env.CATALINA_HOME}/webapps"/>
+
+	<path id="classpath">
+		<fileset dir="${libdir}"/>
+	</path>
+	
+	<target name="create" description="Creates all relevant temporary directoriees. Typically only used the first time these directories need to be created.">
+		<mkdir dir="${target}"/>
+		<mkdir dir="${build}"/>
+		<mkdir dir="${build.webapp}"/>
+		<mkdir dir="${build.webinf}"/>
+		<mkdir dir="${build.classes}"/>
+		<mkdir dir="${build.weblib}"/>
+		<mkdir dir="${deploy}"/>
+	</target>
+
+	<target name="clean">
+		<delete includeEmptyDirs="true">
+		    <fileset dir="${build}" includes = "**/*"/>
+		</delete>
+		<!-- Kill the deploy directory -->
+		<delete includeEmptyDirs="true">
+		    <fileset dir="${deploy}" includes = "**/*"/>
+		</delete>
+
+	</target>
+
+	<target name="compile" depends="clean, create">
+        <javac srcdir="${src.dir}" destdir="${build.classes}" classpathref="classpath"/>
+
+        <mkdir dir="${build.webapp}/META-INF"/>
+
+        <copy todir="${build.weblib}">
+			<fileset dir="${libdir}"/>
+		</copy>
+
+		<copy todir="${build.webapp}">
+			<fileset dir="${src.main.resources}"/>
+		</copy>
+
+		<copy todir="${build.webinf}">
+			<fileset dir="${src.main}/webapp/WEB-INF"/>
+		</copy>
+
+    </target>
+
+	<target name="package" depends="compile">
+        <war destfile="${war.build.path}" needxmlfile='false'>
+			<webinf dir="${build.webinf}" includes="/jsp/**/*.jsp" />
+			<webinf dir="${build.webinf}" includes="web.xml" />
+            <lib dir="${build.weblib}"/>
+            <classes dir="${build.classes}"/>
+        </war>
+    </target>
+
+	<target name="deploy" depends="package">
+		<copy todir="${appserver}" file="${war.build.path}"/>
+	</target>
+	
+	<target name="default" depends="deploy">
+		<echo message="Deployed App"/>
+	</target>
+
+
+</project>
